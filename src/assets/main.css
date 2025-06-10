@@ -1,1 +1,66 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  @apply bg-black text-white;
+}
+
+@layer utilities {
+  .crypto-text-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(142 76% 36%) 0%,
+      hsl(217 91% 60%) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-family: Inter, sans-serif;
+    font-weight: 900;
+  }
+
+  .menu {
+    color: #82888c;
+    font-family: Inter, sans-serif;
+    font-weight: 600;
+  }
+
+  .logo {
+    background: linear-gradient(
+      135deg,
+      hsl(142 76% 36%) 0%,
+      hsl(217 91% 60%) 100%
+    );
+    font-family: Inter, sans-serif;
+    font-weight: 900;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375em;
+    color: white;
+    transition: filter 0.3s ease-in-out;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.5),
+      0 0 40px rgba(59, 130, 246, 0.3);
+    animation: pulse-glow 2s ease-in-out infinite alternate;
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite alternate;
+  }
+
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  @keyframes pulse-glow {
+    0% {
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.5),
+        0 0 40px rgba(59, 130, 246, 0.3);
+    }
+    100% {
+      box-shadow: 0 0 30px rgba(34, 197, 94, 0.8),
+        0 0 60px rgba(59, 130, 246, 0.6);
+    }
+  }
+}

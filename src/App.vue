@@ -1,13 +1,13 @@
-<script setup></script>
+<script setup>
+import Navbar from "./components/Navbar.vue";
+</script>
 
 <template>
-  <div class="navigation">
-    <!-- Router Link is a navigation view (like Link in React) -->
-    <router-link to="/">Home</router-link>
-    <router-link to="/market">Market</router-link>
-    <router-link to="/compare">Compare</router-link>
-    <router-link to="/watchlist">Watchlist</router-link>
+  <div class="background">
+    <Navbar />
+    <!-- This is the page content appear based on the route -->
+    <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 pt-28">
+      <router-view />
+    </div>
   </div>
-  <!-- This is the page content appear based on the route -->
-  <router-view />
 </template>
