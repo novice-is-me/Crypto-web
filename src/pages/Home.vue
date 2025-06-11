@@ -7,7 +7,7 @@ import FloatingCard from "@/components/FloatingCard.vue";
   <div class="pt-10 space-y-14">
     <!-- Mesaage -->
     <div class="space-y-2 text-center">
-      <h1 class="crypto-text-gradient text-2xl sm:text-4xl md:text-6xl">
+      <h1 class="crypto-text-gradient text-4xl md:text-6xl">
         Welcome to the Future
       </h1>
       <p class="text-subtext font-[Inter] text-xs md:text-lg">
@@ -98,10 +98,10 @@ import FloatingCard from "@/components/FloatingCard.vue";
           portfolio today.
         </p>
       </div>
-      <div class="flex justify-center items-center gap-x-4 pt-6">
-        <button class="logo pulse-glow hover:cursor-pointer">
+      <div class="grid grid-cols-1 md:flex justify-center gap-4 pt-6">
+        <router-link to="/market" class="logo pulse-glow hover:cursor-pointer">
           Explore Markets
-        </button>
+        </router-link>
         <button
           class="border border-gray-500 py-2 px-4 rounded-md hover:bg-gray-700 transition-all duration-300 hover:cursor-pointer"
         >
