@@ -13,7 +13,7 @@ const toggleAddModal = () => {
   <!-- Main Content -->
   <div class="pt-10 space-y-14" :class="{ 'blur-sm': isAddModalOpen }">
     <div
-      class="space-y-4 font-[Inter] text-center md:text-start flex justify-between"
+      class="space-y-4 font-[Inter] text-center md:text-start flex justify-center flex-wrap items-center md:justify-between"
     >
       <div>
         <h1 class="crypto-text-gradient text-4xl">Your Watchlist</h1>
@@ -104,10 +104,10 @@ const toggleAddModal = () => {
       class="fixed inset-0 flex items-center justify-center z-50 bg-black/50"
     >
       <div
-        class="bg-black p-6 rounded-lg shadow-lg w-full max-w-[70%] border border-white/10"
+        class="bg-black p-6 rounded-lg shadow-lg w-full max-w-[70%] border border-white/10 max-h-[70vh] md:max-h-full flex flex-col"
       >
-        <div class="flex justify-between items-center">
-          <h2 class="text-xl font-bold mb-4">Add to Watchlist</h2>
+        <div class="flex justify-between items-center mb-4 flex-shrink-0">
+          <h2 class="text-xl font-bold">Add to Watchlist</h2>
           <i
             class="fa-solid fa-xmark hover:cursor-pointer"
             @click="toggleAddModal"
@@ -115,7 +115,7 @@ const toggleAddModal = () => {
         </div>
         <!-- Search Input -->
         <div
-          class="flex items-center rounded-lg w-full"
+          class="flex items-center rounded-lg w-full mb-6 flex-shrink-0"
           style="border: 1px solid rgba(255, 255, 255, 0.1)"
         >
           <i class="fa-solid fa-magnifying-glass text-subtext p-2"></i>
@@ -131,7 +131,9 @@ const toggleAddModal = () => {
         </div>
 
         <!-- Result / Data -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6">
+        <div
+          class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto flex-1"
+        >
           <CryptoCard
             crypto="Bitcoin"
             symbol="BTC"
