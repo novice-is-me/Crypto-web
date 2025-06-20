@@ -2,13 +2,19 @@
 import CryptoCard from "@/components/CryptoCard.vue";
 import FloatingCard from "@/components/FloatingCard.vue";
 import { useCryptoStore } from "@/stores/useCryptoStore";
+import { onMounted, computed } from "vue";
 
 const store = useCryptoStore();
 
-const topCrypto = store.allCryptoData;
+// Make topCrypto reactive by using computed
+const topCrypto = computed(() => store.allCryptoData);
 
-// Fetch data when the component is mounted
-console.log(topCrypto);
+onMounted(async () => {
+  // Actually fetch the data when component mounts
+  await store.fetchCryptoData();
+});
+
+console.log("topCrypto:", topCrypto.value);
 </script>
 
 <template>
@@ -60,42 +66,18 @@ console.log(topCrypto);
       <div
         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-6"
       >
-        <CryptoCard
-          crypto="Bitcoin"
-          symbol="BTC"
-          price="$27,000.00"
-          change="2.5%"
-          marketCap="$500B"
-          volume="$25B"
-          icon="fa-solid fa-bitcoin-sign"
-        />
-        <CryptoCard
-          crypto="Ethereum"
-          symbol="ETH"
-          price="$1,800.00"
-          change="-1.2%"
-          marketCap="$200B"
-          volume="$10B"
-          icon="fa-brands fa-ethereum"
-        />
-        <CryptoCard
-          crypto="Solana"
-          symbol="SOL"
-          price="$0.50"
-          change="0.5%"
-          marketCap="$25B"
-          volume="$1B"
-          icon="fa-solid fa-circle-notch"
-        />
-        <!-- <CryptoCard
-          crypto="Cardano"
-          symbol="ADA"
-          price="$100.00"
-          change="-0.3%"
-          marketCap="$10B"
-          volume="$500M"
-          icon="fa-brands fa-ethereum"
-        /> -->
+        <div v-for="crypto in topCrypto" :key="crypto.symbol">
+          {{ console.log(crypto) }}
+          <CryptoCard
+            :crypto="crypto.name"
+            :symbol="crypto.symbol"
+            :price="crypto.current_price"
+            :change="crypto.market_cap_change_percentage_24h"
+            :marketCap="crypto.market_cap"
+            :volume="crypto.total_volume"
+            :image="crypto.image"
+          />
+        </div>
       </div>
     </div>
     <div class="text-center glass-effect p-6 rounded-lg">

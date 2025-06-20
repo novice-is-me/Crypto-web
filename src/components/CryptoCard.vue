@@ -1,4 +1,11 @@
 <script setup>
+import {
+  formatPrice,
+  formatMarketCapChange24hr,
+  formatMarketCap,
+  format24hVolume,
+} from "@/utils/formatter";
+
 const props = defineProps({
   crypto: {
     type: String,
@@ -9,22 +16,22 @@ const props = defineProps({
     required: true,
   },
   price: {
-    type: String,
+    type: Number,
     required: true,
   },
   change: {
-    type: String,
+    type: Number,
     required: true,
   },
   marketCap: {
-    type: String,
+    type: Number,
     required: true,
   },
   volume: {
-    type: String,
+    type: Number,
     required: true,
   },
-  icon: {
+  image: {
     type: String,
     required: true,
   },
@@ -40,7 +47,7 @@ const props = defineProps({
         <div
           class="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-crypto-blue/20 flex items-center justify-center text-xl font-bold"
         >
-          <i :class="icon" />
+          <img :src="image" alt="" />
         </div>
         <div>
           <p class="font-[Inter] text-xl font-semibold">{{ crypto }}</p>
@@ -48,18 +55,22 @@ const props = defineProps({
         </div>
       </div>
       <div>
-        <p>{{ change }}</p>
+        <p v-html="formatMarketCapChange24hr(change)"></p>
       </div>
     </div>
-    <p class="font-[Inter] font-bold text-xl">{{ price }}</p>
-    <div class="flex justify-between">
-      <div>
+    <p class="font-[Inter] font-bold text-xl">{{ formatPrice(price) }}</p>
+    <div class="flex justify-between gap-x-2">
+      <div class="flex-1 min-w-0">
         <p class="text-subtext text-sm">Market Cap</p>
-        <p>{{ marketCap }}</p>
+        <p class="text-sm font-medium break-words">
+          {{ formatMarketCap(marketCap) }}
+        </p>
       </div>
-      <div>
+      <div class="flex-1 min-w-0 text-right">
         <p class="text-subtext text-sm">Volume 24h</p>
-        <p>{{ volume }}</p>
+        <p class="text-sm font-medium break-words">
+          {{ format24hVolume(volume) }}
+        </p>
       </div>
     </div>
   </div>

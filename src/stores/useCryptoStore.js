@@ -18,7 +18,7 @@ export const useCryptoStore = defineStore("crypto", {
     async fetchCryptoData() {
       try {
         const res = await axios.get(
-          `${this.baseUrl}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1`
+          `${this.baseUrl}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=12&page=1`
         );
 
         console.log("Response from API:", res);
