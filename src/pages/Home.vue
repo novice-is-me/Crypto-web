@@ -1,6 +1,14 @@
 <script setup>
 import CryptoCard from "@/components/CryptoCard.vue";
 import FloatingCard from "@/components/FloatingCard.vue";
+import { useCryptoStore } from "@/stores/useCryptoStore";
+
+const store = useCryptoStore();
+
+const topCrypto = store.allCryptoData;
+
+// Fetch data when the component is mounted
+console.log(topCrypto);
 </script>
 
 <template>
@@ -79,7 +87,7 @@ import FloatingCard from "@/components/FloatingCard.vue";
           volume="$1B"
           icon="fa-solid fa-circle-notch"
         />
-        <CryptoCard
+        <!-- <CryptoCard
           crypto="Cardano"
           symbol="ADA"
           price="$100.00"
@@ -87,7 +95,7 @@ import FloatingCard from "@/components/FloatingCard.vue";
           marketCap="$10B"
           volume="$500M"
           icon="fa-brands fa-ethereum"
-        />
+        /> -->
       </div>
     </div>
     <div class="text-center glass-effect p-6 rounded-lg">
