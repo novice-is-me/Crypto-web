@@ -2,17 +2,40 @@
 import CryptoCard from "@/components/CryptoCard.vue";
 import FloatingCard from "@/components/FloatingCard.vue";
 import { useCryptoStore } from "@/stores/useCryptoStore";
-import { onMounted, computed } from "vue";
+import { onMounted, computed, ref, watch } from "vue";
 
 const store = useCryptoStore();
 
 // Make topCrypto reactive by using computed
 const topCrypto = computed(() => store.allCryptoData);
+const seeMoreData = computed(() => store.seeMoreCryptoData);
+const isLoadingMore = computed(() => store.isLoadingMore);
+const isReachLimit = computed(() => store.reachLimit); // Check if the limit has been reached
+
+// State to control whether to show more data
+const showMoreData = ref(false);
+const isLoadingInitial = ref(true); // Local loading state for initial data
 
 onMounted(async () => {
   // Actually fetch the data when component mounts
-  await store.fetchCryptoData();
+  isLoadingInitial.value = true;
+  try {
+    await store.fetchCryptoData();
+  } finally {
+    isLoadingInitial.value = false;
+  }
 });
+
+const seeMore = async () => {
+  if (!showMoreData.value) {
+    // First time clicking "See More" - load initial extra data
+    await store.loadMoreCrypto();
+    showMoreData.value = true;
+  } else {
+    // Load more data on subsequent clicks
+    await store.loadMoreCrypto();
+  }
+};
 
 console.log("topCrypto:", topCrypto.value);
 </script>
@@ -59,15 +82,26 @@ console.log("topCrypto:", topCrypto.value);
         />
       </div>
     </div>
-
-    <div class="">
+    <div class="space-y-6">
       <p class="font-[Inter] text-4xl font-bold">Top Cryptocurrencies</p>
 
+      <!-- Loading State for Initial Data -->
+      <div v-if="isLoadingInitial" class="text-center py-12">
+        <div class="glass-effect p-6 rounded-lg inline-block">
+          <div class="flex items-center justify-center gap-3">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <span class="text-lg">Please wait, loading data...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Crypto Cards Grid -->
       <div
+        v-else
         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-6"
       >
-        <div v-for="crypto in topCrypto" :key="crypto.symbol">
-          {{ console.log(crypto) }}
+        <!-- Initial Top Crypto Data -->
+        <div v-for="crypto in topCrypto" :key="crypto.id">
           <CryptoCard
             :crypto="crypto.name"
             :symbol="crypto.symbol"
@@ -78,6 +112,49 @@ console.log("topCrypto:", topCrypto.value);
             :image="crypto.image"
           />
         </div>
+
+        <!-- Additional "See More" Data -->
+        <div
+          v-if="showMoreData"
+          v-for="crypto in seeMoreData"
+          :key="`more-${crypto.id}`"
+        >
+          <CryptoCard
+            :crypto="crypto.name"
+            :symbol="crypto.symbol"
+            :price="crypto.current_price"
+            :change="crypto.market_cap_change_percentage_24h"
+            :marketCap="crypto.market_cap"
+            :volume="crypto.total_volume"
+            :image="crypto.image"
+          />
+        </div>
+      </div>
+
+      <!-- See More Button (only show when data is loaded) -->
+      <div
+        v-if="!isLoadingInitial && topCrypto.length > 0"
+        class="text-center hover:cursor-pointer"
+        @click="seeMore"
+      >
+        <p
+          class="glass-effect p-4 rounded-lg inline-block transition-all duration-300 hover:bg-white/10"
+        >
+          <span v-if="!isLoadingMore && !isReachLimit">
+            {{ showMoreData ? "Load More" : "See More" }}
+          </span>
+          <span v-if="isReachLimit">
+            <i class="fa-solid fa-ban"></i> Too many requests, please try again
+            later.
+          </span>
+          <span
+            v-if="isLoadingMore && !isReachLimit"
+            class="flex items-center justify-center gap-2"
+          >
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            Loading...
+          </span>
+        </p>
       </div>
     </div>
     <div class="text-center glass-effect p-6 rounded-lg">

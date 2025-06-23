@@ -13,10 +13,12 @@ export const formatMarketCapChange24hr = (change) => {
     minimumFractionDigits: 2,
   }).format(Math.abs(change));
 
+  console.log("Formatted Change:", formattedChange);
+
   if (change > 0) {
-    return `<i class="fa-solid fa-arrow-up text-green-500"></i> ${formattedChange}%`;
+    return `<i class="fa-solid fa-arrow-up text-green-500"></i> +${formattedChange}%`;
   } else if (change < 0) {
-    return `<i class="fa-solid fa-arrow-down text-red-500"></i> ${formattedChange}%`;
+    return `<i class="fa-solid fa-arrow-down text-red-500"></i> -${formattedChange}%`;
   } else {
     return `<i class="fa-solid fa-minus text-gray-500"></i> ${formattedChange}%`;
   }
