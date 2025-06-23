@@ -8,6 +8,7 @@ export const useCryptoStore = defineStore("crypto", {
     highestCryptoData: [],
     lowestCryptoData: [],
     seeMoreCryptoData: [],
+    marketCryptoData: [],
     currentPage: 1,
     isLoadingMore: false,
     isLoadingInitial: false, // Loading state for initial data fetch
@@ -60,6 +61,23 @@ export const useCryptoStore = defineStore("crypto", {
         this.reachLimit = true; // Ensure loading state is reset on error
       } finally {
         this.isLoadingMore = false;
+      }
+    },
+
+    async fetchMarketCrypto() {
+      this.isLoadingInitial = true;
+      try {
+        const res = await axios.get(
+          `${this.baseUrl}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=24&page=1`
+        );
+
+        console.log("Response from API:", res);
+        this.marketCryptoData = res.data;
+        console.log("All Crypto Data:", this.marketCryptoData);
+      } catch (error) {
+        console.error("Error fetching crypto data:", error);
+      } finally {
+        this.isLoadingInitial = false;
       }
     },
 

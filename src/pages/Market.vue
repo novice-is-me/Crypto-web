@@ -1,6 +1,22 @@
 <script setup>
 import Button from "@/components/Button.vue";
 import CryptoCard from "@/components/CryptoCard.vue";
+import { useCryptoStore } from "@/stores/useCryptoStore";
+import { computed, onMounted } from "vue";
+
+const store = useCryptoStore();
+
+// Make the data reactive in store by using computed
+const marketCryptoData = computed(() => store.marketCryptoData);
+
+// mount the store data when the page is loaded
+onMounted(async () => {
+  await store.fetchMarketCrypto();
+});
+
+const handleSearch = (event) => {
+  console.log("Search input changed:", event.target.value);
+};
 </script>
 
 <template>
@@ -27,6 +43,7 @@ import CryptoCard from "@/components/CryptoCard.vue";
           placeholder="Search for a cryptocurrency..."
           class="w-full p-2 focus:outline-none focus:ring-1 rounded-lg focus:ring-green-500 bg-transparent text-white"
           style="border: 1px solid rgba(255, 255, 255, 0.1); border-left: none"
+          @change="handleSearch"
         />
       </div>
       <div class="flex justify-between items-center pt-4">
@@ -40,42 +57,17 @@ import CryptoCard from "@/components/CryptoCard.vue";
     <div
       class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-6"
     >
-      <CryptoCard
-        crypto="Bitcoin"
-        symbol="BTC"
-        price="$27,000.00"
-        change="2.5%"
-        marketCap="$500B"
-        volume="$25B"
-        icon="fa-solid fa-bitcoin-sign"
-      />
-      <CryptoCard
-        crypto="Ethereum"
-        symbol="ETH"
-        price="$1,800.00"
-        change="-1.2%"
-        marketCap="$200B"
-        volume="$10B"
-        icon="fa-brands fa-ethereum"
-      />
-      <CryptoCard
-        crypto="Solana"
-        symbol="SOL"
-        price="$0.50"
-        change="0.5%"
-        marketCap="$25B"
-        volume="$1B"
-        icon="fa-solid fa-circle-notch"
-      />
-      <CryptoCard
-        crypto="Cardano"
-        symbol="ADA"
-        price="$100.00"
-        change="-0.3%"
-        marketCap="$10B"
-        volume="$500M"
-        icon="fa-brands fa-ethereum"
-      />
+      <div v-for="marketData in marketCryptoData" :key="marketData.id">
+        <CryptoCard
+          :crypto="marketData.name"
+          :symbol="marketData.symbol"
+          :price="marketData.current_price"
+          :change="marketData.market_cap_change_percentage_24h"
+          :marketCap="marketData.market_cap"
+          :volume="marketData.total_volume"
+          :image="marketData.image"
+        />
+      </div>
     </div>
   </div>
 </template>
