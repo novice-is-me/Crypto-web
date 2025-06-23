@@ -40,7 +40,7 @@ const props = defineProps({
 
 <template>
   <div
-    class="border border-white rounded-lg glass-effect hover:border hover:border-gray-700 transition-all duration-300 p-6 space-y-4 hover:scale-105"
+    class="border border-white rounded-lg glass-effect hover:border hover:border-gray-700 transition-all duration-300 p-6 space-y-4 hover:scale-105 h-[220px] flex flex-col justify-between"
   >
     <div class="flex justify-between">
       <div class="flex items-center gap-x-4">
