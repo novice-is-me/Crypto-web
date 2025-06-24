@@ -114,7 +114,9 @@ export const useCryptoStore = defineStore("crypto", {
         this.isLoadingInitial = false;
       }
     },
-    async searchMarket(term) {
+    async searchMarket(term, tab) {
+      console.log("Active tab for search:", tab);
+      console.log("Search term:", term);
       this.isSearching = true;
       try {
         // First, search for crypto IDs
@@ -138,13 +140,79 @@ export const useCryptoStore = defineStore("crypto", {
           `${this.baseUrl}/coins/markets?vs_currency=usd&ids=${idsString}&order=market_cap_desc&per_page=20&page=1`
         );
 
-        this.marketSearchData = marketRes.data;
+        if (tab === "price") {
+          this.marketSearchData = marketRes.data.sort(
+            (a, b) => a.current_price - b.current_price
+          );
+        } else if (tab === "24hChange") {
+          this.marketSearchData = marketRes.data.sort(
+            (a, b) =>
+              a.market_cap_change_percentage_24h -
+              b.market_cap_change_percentage_24h
+          );
+        } else {
+          this.marketSearchData = marketRes.data;
+        }
         console.log("Search results with full data:", this.marketSearchData);
       } catch (error) {
         console.error("Error searching crypto data:", error);
         this.marketSearchData = [];
       } finally {
         this.isSearching = false;
+      }
+    },
+    async sortMarketByPrice() {
+      this.isLoadingInitial = true;
+      try {
+        // No search results, fetch and sort market data
+        const res = await axios.get(
+          `${this.baseUrl}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=24&page=1`
+        );
+
+        console.log("Response from API:", res);
+        this.marketCryptoData = res.data.sort(
+          (a, b) => a.current_price - b.current_price
+        );
+        console.log("Sorted Crypto Data by Price:", this.marketCryptoData);
+      } catch (error) {
+        console.error("Error sorting crypto data by price:", error);
+      } finally {
+        this.isLoadingInitial = false;
+      }
+    },
+    async sortMarketBy24hChange() {
+      this.isLoadingInitial = true;
+      try {
+        // If we have search results, sort them instead of fetching new data
+        if (this.marketSearchData && this.marketSearchData.length > 0) {
+          this.marketSearchData = [...this.marketSearchData].sort(
+            (a, b) =>
+              b.price_change_percentage_24h - a.price_change_percentage_24h
+          );
+          console.log(
+            "Sorted Search Results by 24h Change:",
+            this.marketSearchData
+          );
+        } else {
+          // No search results, fetch and sort market data
+          const res = await axios.get(
+            `${this.baseUrl}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=24&page=1`
+          );
+
+          console.log("Response from API:", res);
+          this.marketCryptoData = res.data.sort(
+            (a, b) =>
+              b.price_change_percentage_24h - a.price_change_percentage_24h
+          );
+          console.log(
+            "Sorted Crypto Data by 24h Change:",
+            this.marketCryptoData
+          );
+        }
+      } catch (error) {
+        console.error("Error sorting crypto data by 24h change:", error);
+      } finally {
+        this.isLoadingInitial = false;
       }
     },
 

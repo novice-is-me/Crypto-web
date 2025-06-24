@@ -2,7 +2,7 @@
 import Button from "@/components/Button.vue";
 import CryptoCard from "@/components/CryptoCard.vue";
 import { useCryptoStore } from "@/stores/useCryptoStore";
-import { computed, onMounted, onUnmounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 const store = useCryptoStore();
 
@@ -10,14 +10,44 @@ const store = useCryptoStore();
 const marketCryptoData = computed(() => store.marketCryptoData);
 const searchResultData = computed(() => store.marketSearchData);
 const isSearching = computed(() => store.isSearching);
+const tab = ref("marketCap"); // Default tab for sorting
+const isLoadingInitial = ref(true); // Local loading state for initial data
+const searchQuery = ref(""); // Reactive search query state
 
 // Debounce functionality
 let searchTimeout = null;
 
 // mount the store data when the page is loaded
 onMounted(async () => {
-  await store.fetchMarketCrypto();
+  isLoadingInitial.value = true;
+  try {
+    await store.fetchMarketCrypto();
+  } finally {
+    isLoadingInitial.value = false;
+  }
 });
+
+// Create a watch component to reactively update the tab based on what tab is active
+watch(tab, async (newTab) => {
+  if (newTab === "price" && searchQuery.value.trim() === "") {
+    await store.sortMarketByPrice();
+  } else if (newTab === "24hChange" && searchQuery.value.trim() === "") {
+    await store.sortMarketBy24hChange();
+  } else if (newTab === "marketCap" && searchQuery.value.trim() === "") {
+    await store.fetchMarketCrypto();
+  } else if (newTab === "price" && searchResultData.value.length > 0) {
+    // If the tab is price and there are search results, sort them by price
+    await store.searchMarket(searchQuery.value, tab.value);
+  } else if (newTab === "24hChange" && searchResultData.value.length > 0) {
+    // If the tab is 24hChange and there are search results, sort them by 24h change
+    await store.searchMarket(searchQuery.value, tab.value);
+  } else if (newTab === "marketCap" && searchResultData.value.length > 0) {
+    // If the tab is marketCap and there are search results, fetch market data
+    await store.searchMarket(searchQuery.value, tab.value);
+  }
+});
+
+// Create a watch component to reactively update the search results if the tab changes
 
 // Clean up timeout when component is unmounted
 onUnmounted(() => {
@@ -27,7 +57,7 @@ onUnmounted(() => {
 });
 
 const handleSearch = (event) => {
-  const searchQuery = event.target.value;
+  searchQuery.value = event.target.value;
 
   // Clear existing timeout
   if (searchTimeout) {
@@ -36,7 +66,7 @@ const handleSearch = (event) => {
 
   // Set new timeout for debounced search
   searchTimeout = setTimeout(async () => {
-    if (!searchQuery.trim()) {
+    if (!searchQuery.value.trim()) {
       // If search is empty, clear search results and fetch regular market data
       store.clearSearchResults();
       await store.fetchMarketCrypto();
@@ -45,11 +75,16 @@ const handleSearch = (event) => {
 
     try {
       // Call the store's search function with debounce
-      await store.searchMarket(searchQuery);
+      await store.searchMarket(searchQuery.value, tab.value);
+      console.log("active tab:", tab.value);
     } catch (error) {
       console.error("Error searching for cryptocurrency:", error);
     }
   }, 800); // 800ms debounce delay
+};
+
+const handleTabChange = (newTab) => {
+  tab.value = newTab;
 };
 </script>
 
@@ -81,9 +116,21 @@ const handleSearch = (event) => {
         />
       </div>
       <div class="flex justify-between items-center pt-4">
-        <Button :label="'Price'" :value="'inactive'" />
-        <Button :label="'24h Change'" :value="'inactive'" />
-        <Button :label="'Market Cap'" :value="'active'" />
+        <Button
+          :label="'Price'"
+          :value="'inactive'"
+          @click="handleTabChange('price')"
+        />
+        <Button
+          :label="'24h Change'"
+          :value="'inactive'"
+          @click="handleTabChange('24hChange')"
+        />
+        <Button
+          :label="'Market Cap'"
+          :value="'active'"
+          @click="handleTabChange('marketCap')"
+        />
       </div>
     </div>
     <!-- Result / Data -->
@@ -105,7 +152,7 @@ const handleSearch = (event) => {
           :crypto="result.name"
           :symbol="result.symbol"
           :price="result.current_price"
-          :change="result.market_cap_change_percentage_24h"
+          :change="result.market_cap_change_percentage_24h ?? 0"
           :marketCap="result.market_cap"
           :volume="result.total_volume"
           :image="result.image"
@@ -131,6 +178,14 @@ const handleSearch = (event) => {
           :volume="marketData.total_volume"
           :image="marketData.image"
         />
+      </div>
+    </div>
+    <div v-if="isLoadingInitial" class="text-center flex justify-center">
+      <div class="glass-effect p-6 rounded-lg inline-block">
+        <div class="flex items-center justify-center gap-3">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <span class="text-lg">Please wait, loading data...</span>
+        </div>
       </div>
     </div>
   </div>
