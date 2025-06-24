@@ -118,17 +118,17 @@ const handleTabChange = (newTab) => {
       <div class="flex justify-between items-center pt-4">
         <Button
           :label="'Price'"
-          :value="'inactive'"
+          :value="tab === 'price' ? 'active' : 'inactive'"
           @click="handleTabChange('price')"
         />
         <Button
           :label="'24h Change'"
-          :value="'inactive'"
+          :value="tab === '24hChange' ? 'active' : 'inactive'"
           @click="handleTabChange('24hChange')"
         />
         <Button
           :label="'Market Cap'"
-          :value="'active'"
+          :value="tab === 'marketCap' ? 'active' : 'inactive'"
           @click="handleTabChange('marketCap')"
         />
       </div>
