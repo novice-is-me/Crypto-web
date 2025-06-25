@@ -11,6 +11,8 @@ export const useCryptoStore = defineStore("crypto", {
     seeMoreCryptoData: [],
     marketCryptoData: [],
     marketSearchData: null, // null when no search, array when search is active
+    compareSearchSuggestions: [], // For compare page dropdown suggestions
+    isLoadingCompareSuggestions: false, // Loading state for compare suggestions
     currentPage: 1,
     isLoadingMore: false,
     isLoadingInitial: false, // Loading state for initial data fetch
@@ -218,6 +220,43 @@ export const useCryptoStore = defineStore("crypto", {
 
     clearSearchResults() {
       this.marketSearchData = null;
+    },
+
+    async searchCompareSuggestions(term) {
+      if (!term || term.length < 2) {
+        this.compareSearchSuggestions = [];
+        return;
+      }
+
+      this.isLoadingCompareSuggestions = true;
+      try {
+        const searchRes = await axios.get(
+          `${this.baseUrl}/search?query=${term}`
+        );
+
+        if (searchRes.data.coins) {
+          this.compareSearchSuggestions = searchRes.data.coins
+            .slice(0, 10) // Limit to 10 suggestions
+            .map((coin) => ({
+              id: coin.id,
+              name: coin.name,
+              symbol: coin.symbol,
+              thumb: coin.thumb,
+              market_cap_rank: coin.market_cap_rank,
+            }));
+        } else {
+          this.compareSearchSuggestions = [];
+        }
+      } catch (error) {
+        console.error("Error fetching search suggestions:", error);
+        this.compareSearchSuggestions = [];
+      } finally {
+        this.isLoadingCompareSuggestions = false;
+      }
+    },
+
+    clearCompareSuggestions() {
+      this.compareSearchSuggestions = [];
     },
 
     resetPagination() {

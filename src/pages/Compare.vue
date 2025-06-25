@@ -1,5 +1,16 @@
 <script setup>
 import CryptoCard from "@/components/CryptoCard.vue";
+import { useCryptoStore } from "@/stores/useCryptoStore";
+import { computed, onMounted } from "vue";
+
+const store = useCryptoStore();
+
+const topCrypto = computed(() => store.allCryptoData);
+const isLoadingInitial = computed(() => store.isLoadingInitial);
+
+onMounted(async () => {
+  await store.fetchCryptoData();
+});
 </script>
 
 <template>
@@ -34,7 +45,7 @@ import CryptoCard from "@/components/CryptoCard.vue";
       </div>
     </div>
 
-    <!-- Result / Data -->
+    <!-- Chosen Data -->
     <div
       class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-6"
     >
@@ -74,6 +85,39 @@ import CryptoCard from "@/components/CryptoCard.vue";
         volume="$500M"
         icon="fa-brands fa-ethereum"
       />
+    </div>
+
+    <!-- Top crypto -->
+    <div class="space-y-6">
+      <p class="font-[Inter] text-4xl font-bold">Top Cryptocurrencies</p>
+    </div>
+
+    <!-- Loading State for Initial Data -->
+    <div v-if="isLoadingInitial" class="text-center">
+      <div class="glass-effect p-6 rounded-lg inline-block">
+        <div class="flex items-center justify-center gap-3">
+          <i class="fa-solid fa-spinner fa-spin"></i>
+          <span class="text-lg">Please wait, loading data...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Crypto Cards Grid -->
+    <div
+      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-6"
+    >
+      <!-- Initial Top Crypto Data -->
+      <div v-for="crypto in topCrypto" :key="crypto.id">
+        <CryptoCard
+          :crypto="crypto.name"
+          :symbol="crypto.symbol"
+          :price="crypto.current_price"
+          :change="crypto.market_cap_change_percentage_24h"
+          :marketCap="crypto.market_cap"
+          :volume="crypto.total_volume"
+          :image="crypto.image"
+        />
+      </div>
     </div>
   </div>
 </template>
