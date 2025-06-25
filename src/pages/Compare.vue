@@ -1,15 +1,34 @@
 <script setup>
 import CryptoCard from "@/components/CryptoCard.vue";
 import { useCryptoStore } from "@/stores/useCryptoStore";
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import { AutoComplete } from "primevue";
 
 const store = useCryptoStore();
 
 const topCrypto = computed(() => store.allCryptoData);
 const isLoadingInitial = computed(() => store.isLoadingInitial);
+const suggestions = computed(() => store.suggestionMarketData);
+const searchQuery = ref("");
+let searchTimeout = null;
 
 onMounted(async () => {
   await store.fetchCryptoData();
+});
+
+// Watch for changes in searchQuery v-model with debounce
+watch(searchQuery, (newValue) => {
+  // Clear existing timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+
+  // Set new timeout for debounced search
+  searchTimeout = setTimeout(() => {
+    console.log("Search query:", newValue);
+    // Simulate fetching suggestions based on search query
+    suggestions.value = store.getCryptoSuggestions(newValue);
+  }, 800);
 });
 </script>
 
@@ -24,7 +43,7 @@ onMounted(async () => {
 
     <!-- Search -->
     <div
-      class="glass-effect p-6 rounded-lg items-center font-[Inter] space-y-4"
+      class="glass-effect p-6 rounded-lg items-center font-[Inter] space-y-4 w-full"
     >
       <div class="flex justify-between items-center flex-wrap">
         <p class="font-bold text-lg">Add Cryptocurrency</p>
@@ -35,12 +54,17 @@ onMounted(async () => {
         class="flex items-center rounded-lg w-full"
         style="border: 1px solid rgba(255, 255, 255, 0.1)"
       >
-        <i class="fa-solid fa-magnifying-glass text-subtext p-2"></i>
-        <input
-          type="text"
+        <i
+          class="fa-solid fa-magnifying-glass text-subtext pl-4 !hidden md:!inline-block"
+        ></i>
+        <AutoComplete
+          v-model="searchQuery"
+          :suggestions="suggestions"
+          optionLabel="name"
+          class="w-full autocomplete-full-width p-2"
+          inputClass="w-full p-2 !text-subtext"
+          style="border-left: none"
           placeholder="Search to add cryptocurrencies..."
-          class="w-full p-2 focus:outline-none focus:ring-1 rounded-lg focus:ring-green-500 bg-transparent text-white"
-          style="border: 1px solid rgba(255, 255, 255, 0.1); border-left: none"
         />
       </div>
     </div>
@@ -121,3 +145,40 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.autocomplete-full-width {
+  width: 100% !important;
+}
+
+.autocomplete-full-width .p-autocomplete-input {
+  width: 100% !important;
+}
+
+.autocomplete-full-width .p-inputtext {
+  width: 100% !important;
+  border: none !important;
+}
+
+::v-deep(.p-autocomplete) {
+  position: relative;
+}
+
+::v-deep(.p-autocomplete-loader) {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+}
+
+::v-deep(.p-inputtext:focus) {
+  box-shadow: none !important;
+  border-color: transparent !important;
+  outline: none !important;
+}
+
+::v-deep(.p-autocomplete-input) {
+  border: none !important;
+}
+</style>

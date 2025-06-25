@@ -18,6 +18,7 @@ export const useCryptoStore = defineStore("crypto", {
     isLoadingInitial: false, // Loading state for initial data fetch
     isSearching: false, // Loading state for search
     reachLimit: false, // Flag to indicate if the limit has been reached
+    suggestionMarketData: [], // For compare page dropdown suggestions
   }),
   // getters are the computed properties of the store
   getters: {
@@ -218,11 +219,7 @@ export const useCryptoStore = defineStore("crypto", {
       }
     },
 
-    clearSearchResults() {
-      this.marketSearchData = null;
-    },
-
-    async searchCompareSuggestions(term) {
+    async getCryptoSuggestions(term) {
       if (!term || term.length < 2) {
         this.compareSearchSuggestions = [];
         return;
@@ -230,29 +227,40 @@ export const useCryptoStore = defineStore("crypto", {
 
       this.isLoadingCompareSuggestions = true;
       try {
+        // First, search for crypto IDs
         const searchRes = await axios.get(
           `${this.baseUrl}/search?query=${term}`
         );
 
-        if (searchRes.data.coins) {
-          this.compareSearchSuggestions = searchRes.data.coins
-            .slice(0, 10) // Limit to 10 suggestions
-            .map((coin) => ({
-              id: coin.id,
-              name: coin.name,
-              symbol: coin.symbol,
-              thumb: coin.thumb,
-              market_cap_rank: coin.market_cap_rank,
-            }));
-        } else {
-          this.compareSearchSuggestions = [];
+        if (!searchRes.data.coins || searchRes.data.coins.length === 0) {
+          this.suggestionMarketData = [];
+          return;
         }
+
+        // Get the top 20 search results
+        const searchResultIds = searchRes.data.coins
+          .slice(0, 20)
+          .map((coin) => coin.id);
+
+        // Fetch full market data for these coins
+        const idsString = searchResultIds.join(",");
+        const marketRes = await axios.get(
+          `${this.baseUrl}/coins/markets?vs_currency=usd&ids=${idsString}&order=market_cap_desc&per_page=10&page=1`
+        );
+
+        this.suggestionMarketData = marketRes.data;
+
+        console.log("sugessted result:", this.suggestionMarketData);
       } catch (error) {
-        console.error("Error fetching search suggestions:", error);
-        this.compareSearchSuggestions = [];
+        console.error("Error searching crypto data:", error);
+        this.suggestionMarketData = [];
       } finally {
         this.isLoadingCompareSuggestions = false;
       }
+    },
+
+    clearSearchResults() {
+      this.marketSearchData = null;
     },
 
     clearCompareSuggestions() {
