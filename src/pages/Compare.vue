@@ -10,7 +10,9 @@ const topCrypto = computed(() => store.allCryptoData);
 const isLoadingInitial = computed(() => store.isLoadingInitial);
 const suggestions = computed(() => store.suggestionMarketData);
 const searchQuery = ref("");
+const selectedCryptos = ref([]); // Array to store selected cryptocurrencies
 let searchTimeout = null;
+const selectedCryptoLength = computed(() => selectedCryptos.value.length);
 
 onMounted(async () => {
   await store.fetchCryptoData();
@@ -25,15 +27,35 @@ watch(searchQuery, (newValue) => {
 
   // Set new timeout for debounced search
   searchTimeout = setTimeout(() => {
-    console.log("Search query:", newValue);
     // Simulate fetching suggestions based on search query
     suggestions.value = store.getCryptoSuggestions(newValue);
+    // selectedCryptos.value.push(newValue);
   }, 800);
 });
+
+const onCryptoSelect = (e) => {
+  const selected = e.value;
+  const limitreached = selectedCryptos.value.length >= 4;
+
+  // Avoid duplicate selections
+  if (
+    !selectedCryptos.value.find((c) => c.id === selected.id) &&
+    !limitreached
+  ) {
+    selectedCryptos.value.push(selected);
+  }
+
+  // Clear the input after selecting
+  searchQuery.value = "";
+};
+
+const clearSelectedCryptos = () => {
+  selectedCryptos.value = [];
+};
 </script>
 
 <template>
-  <div class="pt-10 space-y-14">
+  <div class="pt-10 space-y-10">
     <div class="space-y-4 font-[Inter] text-center md:text-start">
       <h1 class="crypto-text-gradient text-4xl">Compare Cryptocurrencies</h1>
       <p class="text-subtext">
@@ -47,7 +69,9 @@ watch(searchQuery, (newValue) => {
     >
       <div class="flex justify-between items-center flex-wrap">
         <p class="font-bold text-lg">Add Cryptocurrency</p>
-        <p class="text-subtext text-sm">2/4 selected</p>
+        <p class="text-subtext text-sm">
+          {{ selectedCryptoLength }}/4 selected
+        </p>
       </div>
       <!-- Search Input -->
       <div
@@ -65,50 +89,41 @@ watch(searchQuery, (newValue) => {
           inputClass="w-full p-2 !text-subtext"
           style="border-left: none"
           placeholder="Search to add cryptocurrencies..."
+          @item-select="onCryptoSelect"
         />
       </div>
     </div>
 
     <!-- Chosen Data -->
+    <div class="flex justify-between items-center">
+      <p class="font-[Inter] text-4xl font-bold">Selected Cryptocurrencies</p>
+      <p
+        class="glass-effect rounded-lg p-4 hover:cursor-pointer"
+        @click="clearSelectedCryptos"
+      >
+        Clear
+      </p>
+    </div>
     <div
-      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-6"
+      v-if="selectedCryptos.length"
+      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
     >
-      <CryptoCard
-        crypto="Bitcoin"
-        symbol="BTC"
-        price="$27,000.00"
-        change="2.5%"
-        marketCap="$500B"
-        volume="$25B"
-        icon="fa-solid fa-bitcoin-sign"
-      />
-      <CryptoCard
-        crypto="Ethereum"
-        symbol="ETH"
-        price="$1,800.00"
-        change="-1.2%"
-        marketCap="$200B"
-        volume="$10B"
-        icon="fa-brands fa-ethereum"
-      />
-      <CryptoCard
-        crypto="Solana"
-        symbol="SOL"
-        price="$0.50"
-        change="0.5%"
-        marketCap="$25B"
-        volume="$1B"
-        icon="fa-solid fa-circle-notch"
-      />
-      <CryptoCard
-        crypto="Cardano"
-        symbol="ADA"
-        price="$100.00"
-        change="-0.3%"
-        marketCap="$10B"
-        volume="$500M"
-        icon="fa-brands fa-ethereum"
-      />
+      <div v-for="crypto in selectedCryptos" :key="crypto">
+        <CryptoCard
+          :crypto="crypto.name"
+          :symbol="crypto.symbol"
+          :price="crypto.current_price"
+          :change="crypto.market_cap_change_percentage_24h"
+          :marketCap="crypto.market_cap"
+          :volume="crypto.total_volume"
+          :image="crypto.image"
+        />
+      </div>
+    </div>
+    <div v-if="!selectedCryptos.length">
+      <div class="text-center text-subtext text-xl">
+        <p>No cryptocurrencies selected for comparison.</p>
+      </div>
     </div>
 
     <!-- Top crypto -->

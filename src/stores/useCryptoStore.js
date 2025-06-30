@@ -249,8 +249,6 @@ export const useCryptoStore = defineStore("crypto", {
         );
 
         this.suggestionMarketData = marketRes.data;
-
-        console.log("sugessted result:", this.suggestionMarketData);
       } catch (error) {
         console.error("Error searching crypto data:", error);
         this.suggestionMarketData = [];
