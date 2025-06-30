@@ -1,11 +1,68 @@
 <script setup>
 import CryptoCard from "@/components/CryptoCard.vue";
-import { ref } from "vue";
+import { useCryptoStore } from "@/stores/useCryptoStore";
+import { AutoComplete } from "primevue";
+import { computed, onMounted, ref, watch } from "vue";
+
+const store = useCryptoStore();
 
 const isAddModalOpen = ref(false);
+const selectedCrypto = ref([]);
+const searchQuery = ref("");
+const suggestions = computed(() => store.suggestionMarketData);
+let searchTimeout = null;
+// Load from the localstorage
+const storedCryptos = localStorage.getItem("mainSelectedCrypto");
+const mainSelectedCrypto = ref(storedCryptos ? JSON.parse(storedCryptos) : []);
+
+// onMounted(async () => {
+//   await store.fetchCryptoData();
+// });
 
 const toggleAddModal = () => {
   isAddModalOpen.value = !isAddModalOpen.value;
+};
+
+// Watch for changes in searchQuery v-model with debounce
+watch(searchQuery, (newValue) => {
+  // Clear existing timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+
+  // Set new timeout for debounced search
+  searchTimeout = setTimeout(() => {
+    // Simulate fetching suggestions based on search query
+    suggestions.value = store.getCryptoSuggestions(newValue);
+    // selectedCryptos.value.push(newValue);
+  }, 800);
+});
+
+const onCryptoSelect = (e) => {
+  const selected = e.value;
+  const limitreached = selectedCrypto.value.length >= 4;
+
+  // Avoid duplicate selections
+  if (
+    !selectedCrypto.value.find((c) => c.id === selected.id) &&
+    !limitreached
+  ) {
+    selectedCrypto.value.push(selected);
+  }
+
+  // Clear the input after selecting
+  searchQuery.value = "";
+};
+
+const addToWatchlist = (crypto) => {
+  if (!mainSelectedCrypto.value.find((c) => c.id === crypto.id)) {
+    const updated = [...mainSelectedCrypto.value, crypto];
+    localStorage.setItem("mainSelectedCrypto", JSON.stringify(updated));
+    mainSelectedCrypto.value = updated;
+  }
+
+  selectedCrypto.value = selectedCrypto.value.filter((c) => c.id !== crypto.id);
+  isAddModalOpen.value = false;
 };
 </script>
 
@@ -32,7 +89,7 @@ const toggleAddModal = () => {
       >
         <i class="fa-solid fa-eye text-green-500 text-2xl"></i>
         <div>
-          <p>3</p>
+          <p>{{ mainSelectedCrypto.length ?? 0 }}</p>
           <p>Cryptocurrencies</p>
         </div>
       </div>
@@ -59,42 +116,17 @@ const toggleAddModal = () => {
     <div
       class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
     >
-      <CryptoCard
-        crypto="Bitcoin"
-        symbol="BTC"
-        price="$27,000.00"
-        change="2.5%"
-        marketCap="$500B"
-        volume="$25B"
-        icon="fa-solid fa-bitcoin-sign"
-      />
-      <CryptoCard
-        crypto="Ethereum"
-        symbol="ETH"
-        price="$1,800.00"
-        change="-1.2%"
-        marketCap="$200B"
-        volume="$10B"
-        icon="fa-brands fa-ethereum"
-      />
-      <CryptoCard
-        crypto="Solana"
-        symbol="SOL"
-        price="$0.50"
-        change="0.5%"
-        marketCap="$25B"
-        volume="$1B"
-        icon="fa-solid fa-circle-notch"
-      />
-      <CryptoCard
-        crypto="Cardano"
-        symbol="ADA"
-        price="$100.00"
-        change="-0.3%"
-        marketCap="$10B"
-        volume="$500M"
-        icon="fa-brands fa-ethereum"
-      />
+      <div v-for="crypto in mainSelectedCrypto" :key="crypto.id">
+        <CryptoCard
+          :crypto="crypto.name"
+          :symbol="crypto.symbol"
+          :price="crypto.current_price"
+          :change="crypto.market_cap_change_percentage_24h"
+          :marketCap="crypto.market_cap"
+          :volume="crypto.total_volume"
+          :image="crypto.image"
+        />
+      </div>
     </div>
   </div>
 
@@ -104,7 +136,7 @@ const toggleAddModal = () => {
       class="fixed inset-0 flex items-center justify-center z-50 bg-black/50"
     >
       <div
-        class="bg-black p-6 rounded-lg shadow-lg w-full max-w-[70%] border border-white/10 max-h-[70vh] md:max-h-full flex flex-col"
+        class="bg-black p-6 rounded-lg shadow-lg w-full max-w-[70%] border border-white/10 max-h-[70vh] md:max-h-full flex flex-col md:overflow-x-hidden"
       >
         <div class="flex justify-between items-center mb-4 flex-shrink-0">
           <h2 class="text-xl font-bold">Add to Watchlist</h2>
@@ -115,61 +147,38 @@ const toggleAddModal = () => {
         </div>
         <!-- Search Input -->
         <div
-          class="flex items-center rounded-lg w-full mb-6 flex-shrink-0"
+          class="flex items-center rounded-lg w-full"
           style="border: 1px solid rgba(255, 255, 255, 0.1)"
         >
-          <i class="fa-solid fa-magnifying-glass text-subtext p-2"></i>
-          <input
-            type="text"
+          <i
+            class="fa-solid fa-magnifying-glass text-subtext pl-4 !hidden md:!inline-block"
+          ></i>
+          <AutoComplete
+            v-model="searchQuery"
+            :suggestions="suggestions"
+            optionLabel="name"
+            class="w-full autocomplete-full-width p-2"
+            inputClass="w-full p-2 !text-subtext"
+            style="border-left: none"
             placeholder="Search to add cryptocurrencies..."
-            class="w-full p-2 focus:outline-none focus:ring-1 rounded-lg focus:ring-green-500 bg-transparent text-white"
-            style="
-              border: 1px solid rgba(255, 255, 255, 0.1);
-              border-left: none;
-            "
+            @item-select="onCryptoSelect"
           />
         </div>
 
         <!-- Result / Data -->
-        <div
-          class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto flex-1"
-        >
-          <CryptoCard
-            crypto="Bitcoin"
-            symbol="BTC"
-            price="$27,000.00"
-            change="2.5%"
-            marketCap="$500B"
-            volume="$25B"
-            icon="fa-solid fa-bitcoin-sign"
-          />
-          <CryptoCard
-            crypto="Ethereum"
-            symbol="ETH"
-            price="$1,800.00"
-            change="-1.2%"
-            marketCap="$200B"
-            volume="$10B"
-            icon="fa-brands fa-ethereum"
-          />
-          <CryptoCard
-            crypto="Solana"
-            symbol="SOL"
-            price="$0.50"
-            change="0.5%"
-            marketCap="$25B"
-            volume="$1B"
-            icon="fa-solid fa-circle-notch"
-          />
-          <CryptoCard
-            crypto="Cardano"
-            symbol="ADA"
-            price="$100.00"
-            change="-0.3%"
-            marketCap="$10B"
-            volume="$500M"
-            icon="fa-brands fa-ethereum"
-          />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto pt-4">
+          <div v-for="crypto in selectedCrypto" :key="crypto.id">
+            <CryptoCard
+              :crypto="crypto.name"
+              :symbol="crypto.symbol"
+              :price="crypto.current_price"
+              :change="crypto.market_cap_change_percentage_24h"
+              :marketCap="crypto.market_cap"
+              :volume="crypto.total_volume"
+              :image="crypto.image"
+              @click="addToWatchlist(crypto)"
+            />
+          </div>
         </div>
       </div>
     </div>
