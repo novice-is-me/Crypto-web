@@ -1,7 +1,6 @@
 <script setup>
 const props = defineProps({
   value: {
-    type: String,
     required: true,
   },
   description: {
@@ -25,10 +24,11 @@ const props = defineProps({
   >
     <div class="flex justify-between items-center">
       <i :class="icon" class="text-2xl text-green-500"></i>
-      <p class="text-white font-bold mt-2">{{ percentage }}</p>
     </div>
     <div class="text-start">
-      <p class="font-[Inter] font-bold text-2xl">{{ value }}</p>
+      <p class="font-[Inter] font-bold text-2xl">
+        {{ value ?? "Data is loading" }}
+      </p>
       <p class="text-subtext text-sm font-[Inter]">{{ description }}</p>
     </div>
   </div>

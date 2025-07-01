@@ -19,6 +19,10 @@ export const useCryptoStore = defineStore("crypto", {
     isSearching: false, // Loading state for search
     reachLimit: false, // Flag to indicate if the limit has been reached
     suggestionMarketData: [], // For compare page dropdown suggestions
+    totalMarketCap: 0,
+    totalVolume: 0,
+    activeCryptos: 0,
+    markets: 0,
   }),
   // getters are the computed properties of the store
   getters: {
@@ -254,6 +258,24 @@ export const useCryptoStore = defineStore("crypto", {
         this.suggestionMarketData = [];
       } finally {
         this.isLoadingCompareSuggestions = false;
+      }
+    },
+
+    async fetchTotalMarketCap() {
+      try {
+        const res = await axios.get(`${this.baseUrl}/global`);
+
+        this.totalMarketCap = res.data.data.total_market_cap.usd;
+        this.activeCryptos = res.data.data.active_cryptocurrencies;
+        this.totalVolume = res.data.data.total_volume.usd;
+        this.markets = res.data.data.markets;
+
+        console.log("Total Market Cap:", this.totalMarketCap);
+        console.log("Active Cryptocurrencies:", this.activeCryptos);
+        console.log("Total Volume:", this.totalVolume);
+        console.log("Markets:", this.markets);
+      } catch (error) {
+        console.error("Error fetching crypto data:", error);
       }
     },
 

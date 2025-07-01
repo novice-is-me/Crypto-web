@@ -11,6 +11,10 @@ const topCrypto = computed(() => store.allCryptoData);
 const seeMoreData = computed(() => store.seeMoreCryptoData);
 const isLoadingMore = computed(() => store.isLoadingMore);
 const isReachLimit = computed(() => store.reachLimit); // Check if the limit has been reached
+const totalMarketCap = computed(() => store.totalMarketCap);
+const activeCryptos = computed(() => store.activeCryptos);
+const totalVolume = computed(() => store.totalVolume);
+const markets = computed(() => store.markets);
 
 // State to control whether to show more data
 const showMoreData = ref(false);
@@ -21,6 +25,7 @@ onMounted(async () => {
   isLoadingInitial.value = true;
   try {
     await store.fetchCryptoData();
+    await store.fetchTotalMarketCap();
   } finally {
     isLoadingInitial.value = false;
   }
@@ -37,7 +42,17 @@ const seeMore = async () => {
   }
 };
 
-console.log("topCrypto:", topCrypto.value);
+console.log("total market value:", totalMarketCap.value);
+
+const formatGlobalDataNumber = (value) => {
+  if (value >= 1_000_000_000) {
+    return "$" + (value / 1_000_000_000).toFixed(2) + "B";
+  } else if (value >= 1_000_000) {
+    return "$" + (value / 1_000_000).toFixed(2) + "M";
+  } else {
+    return "$" + value.toFixed(2);
+  }
+};
 </script>
 
 <template>
@@ -57,25 +72,25 @@ console.log("topCrypto:", topCrypto.value);
         class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-10"
       >
         <FloatingCard
-          value="$1.73T"
+          :value="formatGlobalDataNumber(totalMarketCap)"
           description="Total Market Cap"
           icon="fa-solid fa-dollar-sign"
           percentage="+2.5%"
         />
         <FloatingCard
-          value="$82.5B"
+          :value="formatGlobalDataNumber(totalVolume)"
           description="24h Trading Volume"
           icon="fa-solid fa-signal"
           percentage="+2.5%"
         />
         <FloatingCard
-          value="51.2%"
-          description="Bitcoin Dominance"
+          :value="markets"
+          description="Active Markets"
           icon="fa solid fa-arrow-trend-up"
           percentage="+2.5%"
         />
         <FloatingCard
-          value="2,847"
+          :value="activeCryptos"
           description="Active Cryptocurrencies"
           icon="fa solid fa-arrow-trend-up"
           percentage="+2.5%"
