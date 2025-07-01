@@ -52,6 +52,10 @@ const onCryptoSelect = (e) => {
 const clearSelectedCryptos = () => {
   selectedCryptos.value = [];
 };
+
+const selectCrypto = (crypto) => {
+  selectedCryptos.value.push(crypto);
+};
 </script>
 
 <template>
@@ -155,6 +159,7 @@ const clearSelectedCryptos = () => {
           :marketCap="crypto.market_cap"
           :volume="crypto.total_volume"
           :image="crypto.image"
+          @click="selectCrypto(crypto)"
         />
       </div>
     </div>
