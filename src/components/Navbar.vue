@@ -26,27 +26,54 @@ const openMenu = () => {
       </div>
       <!-- Default Menu -->
       <div class="gap-x-4 menu hidden md:flex">
-        <router-link to="/"
-          ><div class="flex items-center gap-x-2 justify-center">
-            <i class="fa-solid fa-house text-subtext"></i>
+        <router-link to="/">
+          <div
+            :class="[
+              'flex items-center gap-x-2 justify-center',
+              $route.path === '/' ? 'text-green-500 font-bold' : 'text-subtext',
+            ]"
+          >
+            <i class="fa-solid fa-house"></i>
             <p>Menu</p>
-          </div></router-link
-        >
+          </div>
+        </router-link>
+
         <router-link to="/market"
-          ><div class="flex items-center gap-x-2">
-            <i class="fa-solid fa-chart-simple text-subtext"></i>
+          ><div
+            :class="[
+              'flex items-center gap-x-2 justify-center',
+              $route.path === '/market'
+                ? 'text-green-500 font-bold'
+                : 'text-subtext',
+            ]"
+          >
+            <i class="fa-solid fa-chart-simple"></i>
             <p>Market</p>
           </div>
         </router-link>
-        <router-link to="/compare" class="flex items-center gap-x-2">
-          <div class="flex items-center gap-x-2">
-            <i class="fa-solid fa-magnifying-glass text-subtext"></i>
+        <router-link to="/compare">
+          <div
+            :class="[
+              'flex items-center gap-x-2 justify-center',
+              $route.path === '/compare'
+                ? 'text-green-500 font-bold'
+                : 'text-subtext',
+            ]"
+          >
+            <i class="fa-solid fa-magnifying-glass"></i>
             <p>Compare</p>
           </div>
         </router-link>
-        <router-link to="/watchlist" class="flex items-center gap-x-2">
-          <div class="flex items-center gap-x-2">
-            <i class="fa-solid fa-eye text-subtext"></i>
+        <router-link to="/watchlist">
+          <div
+            :class="[
+              'flex items-center gap-x-2 justify-center',
+              $route.path === '/watchlist'
+                ? 'text-green-500 font-bold'
+                : 'text-subtext',
+            ]"
+          >
+            <i class="fa-solid fa-eye"></i>
             <p>Watchlist</p>
           </div>
         </router-link>
