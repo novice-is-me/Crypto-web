@@ -64,11 +64,31 @@ const addToWatchlist = (crypto) => {
   selectedCrypto.value = selectedCrypto.value.filter((c) => c.id !== crypto.id);
   isAddModalOpen.value = false;
 };
+
+const clearWatchlist = () => {
+  if (confirm("Are you sure you want to clear your watchlist?")) {
+    mainSelectedCrypto.value = [];
+    localStorage.removeItem("mainSelectedCrypto");
+  }
+};
+
+// We will watch the mainSelectedCrypto, get their ids, and then used it to identify the count of loss and gain
+const gainCount = computed(() => {
+  return mainSelectedCrypto.value.filter(
+    (crypto) => crypto.market_cap_change_percentage_24h > 0
+  ).length;
+});
+
+const lossCount = computed(() => {
+  return mainSelectedCrypto.value.filter(
+    (crypto) => crypto.market_cap_change_percentage_24h < 0
+  ).length;
+});
 </script>
 
 <template>
   <!-- Main Content -->
-  <div class="pt-10 space-y-14" :class="{ 'blur-sm': isAddModalOpen }">
+  <div class="pt-10 space-y-10" :class="{ 'blur-sm': isAddModalOpen }">
     <div
       class="space-y-4 font-[Inter] text-center md:text-start flex justify-center flex-wrap items-center md:justify-between"
     >
@@ -76,9 +96,20 @@ const addToWatchlist = (crypto) => {
         <h1 class="crypto-text-gradient text-4xl">Your Watchlist</h1>
         <p class="text-subtext">Keep track of your favorite cryptocurrencies</p>
       </div>
-      <div class="flex items-center gap-x-2 logo hover:cursor-pointer">
-        <i class="fa-solid fa-plus"></i>
-        <p @click="toggleAddModal">Add to Watchlist</p>
+      <div class="flex items-center gap-x-4">
+        <div class="flex items-center gap-x-2 logo hover:cursor-pointer">
+          <i class="fa-solid fa-plus"></i>
+          <p @click="toggleAddModal">Add to Watchlist</p>
+        </div>
+
+        <div v-if="mainSelectedCrypto.length > 0" class="text-center">
+          <p
+            class="text-subtext glass-effect p-2 rounded-lg hover:cursor-pointer"
+            @click="clearWatchlist"
+          >
+            Clear Watchlist
+          </p>
+        </div>
       </div>
     </div>
 
@@ -98,7 +129,7 @@ const addToWatchlist = (crypto) => {
       >
         <i class="fa-solid fa-arrow-up"></i>
         <div>
-          <p>2</p>
+          <p>{{ gainCount }}</p>
           <p>Gaining</p>
         </div>
       </div>
@@ -107,11 +138,12 @@ const addToWatchlist = (crypto) => {
       >
         <i class="fa-solid fa-arrow-down"></i>
         <div>
-          <p>1</p>
+          <p>{{ lossCount }}</p>
           <p>Losing</p>
         </div>
       </div>
     </div>
+
     <!-- Coin Section -->
     <div
       class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"

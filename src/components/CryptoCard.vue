@@ -46,7 +46,7 @@ const props = defineProps({
   <div
     :class="[
       'border border-white rounded-lg glass-effect hover:border hover:border-gray-700 transition-all duration-300 p-6 space-y-4  flex flex-col justify-between',
-      isHovered ? 'hover:scale-105 h-[220px]' : '',
+      isHovered ? 'hover:scale-105 h-[250px]' : '',
     ]"
   >
     <div class="flex justify-between">
